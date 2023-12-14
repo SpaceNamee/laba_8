@@ -1,243 +1,184 @@
 #include <iostream>
-#include <vector>
-#include <string>
 #include <fstream>
+#include <algorithm>
+#include <string>
 #include <cctype>
 
 using namespace std;
-struct catalog
-{
-	int code;
-	string lastname;
-	int page;
-	string title;
-	int year;
-} needInfo;
 
-// створення файлу
-// запис інформації
-// вивід інформації
-// функція з інтерфейсу
-void GetInfo(struct catalog *needInfo);
-void FillFile(string filename, struct catalog needInfo);
-bool CheckIsNumber(string &userInput);
-string SearchBook(struct catalog needInfo, string filename);
-int interface();
-bool continueOrNot(string text);
+struct CatalogEntry {
+    int code;
+    string lastname;
+    int page;
+    string title;
+    int year;
+};
 
-int main()
-{
-	string filename = "catalog.txt";
-	int userChoosing;
+void getInput(CatalogEntry& entry);
+bool isNumber(const string& str);
+void writeFile(const string& filename, const CatalogEntry& entry);
+string searchBook(const string& filename, const string& title);
+int getUserChoice();
+bool shouldContinue(const string& text);
 
-	while (true)
-	{
-		userChoosing = interface();
-		switch (userChoosing)
-		{
-		case 0:
-			exit(0);
-			break;
-		case 1:
-			do
-			{
-				GetInfo(&needInfo);
-				FillFile(filename, needInfo);
+int main() {
+    string filename = "catalog.txt";
+    int userChoice;
 
-			} while (continueOrNot("Add another book"));
-			break;
-		case 2:
-			do
-			{
-				if (SearchBook(needInfo, filename) == "")
-				{
-					cout << "Such book is not found" << endl;
-				}
+    while (true) {
+        userChoice = getUserChoice();
 
-			} while (continueOrNot("Search another book"));
+        switch (userChoice) {
+            case 0:
+                exit(0);
+                break;
+            case 1:
+                do {
+                    CatalogEntry newEntry;
+                    getInput(newEntry);
+                    writeFile(filename, newEntry);
+                } while (shouldContinue("Add another book"));
+                break;
+            case 2:
+                do {
+                    string title;
+                    cout << "Enter the title of the book to search: ";
+                    cin.ignore();
+                    getline(cin, title);
 
-			break;
-		default:
-			cout<< "\nUnexpected value"<<endl;
+                    string result = searchBook(filename, title);
+                    if (result.empty()) {
+                        cout << "Book not found." << endl;
+                    }
+                } while (shouldContinue("Search another book"));
+                break;
+            default:
+                cout << "\nUnexpected value\n" << endl;
+                break;
+        }
+    }
 
-			break;
-		}
-	}
+    return 0;
 }
 
-void GetInfo(struct catalog *needInfo)
-{
+void getInput(CatalogEntry& entry) {
 	string userInput;
 
-	cin.ignore(999999, '\n');
-	do
-	{
-		std::cout << "Enter code of the book:" << std::endl;
-		getline(cin, userInput);
+	cout << "Enter code of the book: ";
+    do {
+        getline(cin, userInput);
+        if (isNumber(userInput)) {
+            entry.code = stoi(userInput);
+            break;
+        } else {
+            cout << "Invalid input. Please enter a valid number.\n";
+        }
+    } while (true);
 
-		if (CheckIsNumber(userInput))
-		{
-			needInfo->code = stoi(userInput);
-			break;
-		}
-		else
-		{
-			std::cout << "Invalid input. Please enter a valid number.\n"
-					  << std::endl;
-		}
-	} while (true);
+    cout << "Enter last name of the author: ";
+    getline(cin, entry.lastname);
 
-	cout << "Enter last_name of the author:" << endl;
-	getline(cin, needInfo->lastname);
+    cout << "Enter title of the book: ";
+    getline(cin, entry.title);
 
-	cout << "Enter title of the author:" << endl;
-	getline(cin, needInfo->title);
+    cout << "Enter year of publication of the book: ";
 
-	do
-	{
-		cout << "Enter year of publication of the book:" << endl;
-		getline(cin, userInput);
+    do {
+        getline(cin, userInput);
+        if (isNumber(userInput)) {
+            entry.year = stoi(userInput);
+            break;
+        } else {
+            cout << "Invalid input. Please enter a valid year.\n";
+        }
+    } while (true);
 
-		if (CheckIsNumber(userInput))
-		{
-			needInfo->year = stoi(userInput);
-			break;
-		}
-		else
-		{
-			std::cout << "Invalid input. Please enter a valid year.\n"
-					  << std::endl;
-		}
-	} while (true);
-
-	do
-	{
-		cout << "Enter number of page in the book:" << endl;
-		getline(cin, userInput);
-
-		if (CheckIsNumber(userInput))
-		{
-			needInfo->page = stoi(userInput);
-			break;
-		}
-		else
-		{
-			std::cout << "Invalid input. Please enter a valid number.\n"
-					  << std::endl;
-		}
-	} while (true);
+    cout << "Enter number of pages in the book: ";
+    do {
+        getline(cin, userInput);
+        if (isNumber(userInput)) {
+            entry.page = stoi(userInput);
+            break;
+        } else {
+            cout << "Invalid input. Please enter a valid number.\n";
+        }
+    } while (true);
 }
 
-bool CheckIsNumber(string &userInput)
-{
-	bool containsOnlyDigits = true;
-
-	for (char c : userInput)
-	{
-		if (!isdigit(c))
-		{
-			containsOnlyDigits = false;
-			break;
-		}
-	}
-
-	return containsOnlyDigits;
+bool isNumber(const string& str) {
+    return all_of(str.begin(), str.end(), ::isdigit);
 }
 
-void FillFile(string filename, struct catalog needInfo)
-{
+void writeFile(const string& filename, const CatalogEntry& entry) {
+    ofstream file(filename, ios::app);
 
-	ofstream file;
-	file.open(filename, std::ios::app);
+    if (!file.is_open()) {
+        cerr << "Error: Unable to open file " << filename << endl;
+        exit(EXIT_FAILURE);
+    }
 
-	if (!file)
-	{
-		cerr << "File was not found" << endl;
-	}
+    file << entry.code << "\t" << entry.lastname << "\t" << entry.page << "\t"
+         << entry.title << "\t" << entry.year << "\n";
 
-	file << needInfo.code
-		 << "\t" << needInfo.lastname
-		 << "\t" << needInfo.page
-		 << "\t" << needInfo.title
-		 << "\t" << needInfo.year << "\n";
-
-	file.close();
+    file.close();
 }
 
-string SearchBook(struct catalog needInfo, string filename)
-{
+string searchBook(const string& filename, const string& title) {
+    ifstream file(filename);
+    string line;
 
-	string title_of_search_book;
-	cout << "Enter a searched book" << endl;
-	cin.ignore(9999, '\n');
-	getline(cin, title_of_search_book);
+    while (getline(file, line)) {
+        if (line.find(title) != string::npos) {
+            cout << "Book found:\n" << line << endl;
+            return line;
+        }
+    }
 
-	ifstream file(filename);
-
-	string line;
-
-	while (getline(file, line))
-	{
-		if (line.find(title_of_search_book) != string::npos)
-		{
-			cout << "Such book is found" << endl
-				 << line << endl;
-			return line;
-		}
-	}
-	return "";
+    return "";
 }
 
-int interface()
-{
-	string userChoosing;
-	int choosingInInt;
-	std::cout << "Welcome in catalog-lib" << std::endl;
+int getUserChoice() {
+    int choice;
+    string userInput;
 
-	do
-	{
-		std::cout<< "---------------------------------------------------------------" << std::endl
-			  << "What are you going to do?" << std::endl
-			  << "0) Close app" << std::endl
-			  << "1) Add the book to the catalog" << std::endl
-			  << "2) Find the book in the catalog" << std::endl
-			  << "Enter 0, 1 or 2" << std::endl;
-	cin >> userChoosing;
+    cout << "Welcome to catalog-lib\n";
+    cout << "---------------------------------------------------------------\n";
+    cout << "What would you like to do?\n";
+    cout << "0) Close app\n";
+    cout << "1) Add a book to the catalog\n";
+    cout << "2) Find a book in the catalog\n";
+    cout << "Enter 0, 1, or 2: ";
 
-	if (CheckIsNumber(userChoosing))
-	{
-		choosingInInt = stoi(userChoosing);
-		break;
-		}
-		else
-		{
-			cerr <<"\n"<<"Incorrect value"<<"\n"<<endl;
-		}
-	} while (true);
+    do {
+        getline(cin, userInput);
+        if (isNumber(userInput)) {
+            choice = stoi(userInput);
+            break;
+        } else {
+            cerr << "\nError: Incorrect value. Please enter 0, 1, or 2.\n\n";
+        }
+    } while (true);
 
-	return choosingInInt;
+    return choice;
 }
 
-bool continueOrNot(string text)
-{
-	string userChoosing;
-	cout << "< Exit -press 0" << endl
-		 <<"<"<<text<<" -press 1" << endl;
-	do
-	{
-		cin >> userChoosing;
-		if (userChoosing == "1")
-		{
-			return true;
-		}
-		else if (userChoosing == "0")
-		{
-			return false;
-		}
-		else
-		{
-			std::cout << "Invalid input. Please enter 0 or 1." << std::endl;
-		}
+bool shouldContinue(const string& text) {
+    string userChoice;
 
-	} while (true);
+    cout << "< Exit - press 0\n";
+    cout << "< " << text << " - press 1\n";
+
+    do {
+        cout << "Enter your choice: ";
+        cin >> userChoice;
+		cin.ignore();
+
+		if (userChoice == "1") {
+            return true;
+        } else if (userChoice == "0") {
+            return false;
+        } else {
+            cout << "Invalid input. Please enter 0 or 1.\n";
+        }
+    } while (true);
 }
