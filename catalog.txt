@@ -1,5 +1,11 @@
-
-234	Marianna	453	JoJo	2006
-234	Kalimangaro	234	Free Pay	2004
-23	Lola	24	Death	2005
-123	Pope	234	Gara	2006
+9780321601919	Humble and Farley	512	Continuous Delivery	2010
+9786170952851	Martin	464	Clean Code	2008
+136816487	Stroustrup	320	Tour of C++	2022
+1593278888	Lospinoso	792	C++ Crash Course	2019
+321958322	Stroustrup	1376	C++ Programing Language	2013
+908338182	Orosz	413	The Software Engineer`s Guidebook	2023
+9780201835953	Brooks	336	Mythical Man-Month	1995
+128119055	Hennessy	936	Computer Architecture	2017
+1862059349	Evanosky	144	Lost San Francisco	2011
+131755633	Mano	544	Computer System Architecture	1992
+375823942	Rouling	300	Harry Potter	2007

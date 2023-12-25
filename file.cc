@@ -10,7 +10,7 @@
 using namespace std;
 
 struct CatalogEntry {
-    int code;
+    long long code;
     string lastname;
     int page;
     string title;
@@ -72,7 +72,7 @@ vector<CatalogEntry> getInput(CatalogEntry& entry) {
     do {
         getline(cin, userInput);
         if (isNumber(userInput)) {
-            entry.code = stoi(userInput);
+            entry.code = stoll(userInput);
     	        break;
         } else {
             cout << "Invalid input. Please enter a valid number.\n";
@@ -90,7 +90,7 @@ vector<CatalogEntry> getInput(CatalogEntry& entry) {
     do {
         getline(cin, userInput);
         if (isNumber(userInput)) {
-            entry.year = stoi(userInput);
+            entry.year = stoll(userInput);
             break;
         } else {
             cout << "Invalid input. Please enter a valid year.\n";
@@ -155,7 +155,7 @@ void searchBook(vector<CatalogEntry> &books) {
         // Convert the author's name, publisher, and title in the database to lowercase
         transform(g1.begin(), g1.end(), g1.begin(), ::tolower);
 
-        if (elementToFind == g1)
+        if (g1.find(elementToFind) != string::npos)
         {
             result.push_back(book);
         }
@@ -222,9 +222,18 @@ vector<CatalogEntry> readBookFromFile(string &filename){
         string line;
 
         while(getline(file, line)){
-            stringstream iss(line);
+            stringstream iss(line); 
+            string i;
+            getline(iss, i, '\t');
+            book.code = stoll(i);
+            getline(iss, book.lastname, '\t');
+            getline(iss, i, '\t');
+            book.page = stoi(i);
+            getline(iss, book.title, '\t');
+            getline(iss, i);
+            book.year = stoi(i);
 
-            iss >> book.code >> book.lastname >> book.page >> book.title >> book.year;
+        //     iss >> book.code >> book.lastname >> book.page >> book.title >> book.year;
             books.push_back(book);
         }
     }
@@ -238,7 +247,7 @@ void displayCatalog(vector<CatalogEntry> books){
 
     cout << left << setw(25) << "    Code" << setw(19) << "Lastname" << setw(15) << "Page" << setw(20) << "Title" << setw(10) << right << "Year" << endl;
     for (size_t i = 0; i < books.size(); i++){
-        cout << i + 1 << ")" << left << setw(20) << books[i].code << setw(20) << books[i].lastname << setw(10) << books[i].page << setw(20) << books[i].title << setw(15) << right << books[i].year << endl;
+        cout << i + 1 << ")" << left << setw(20) << books[i].code << setw(20) << books[i].lastname << setw(10) << books[i].page << setw(25) << books[i].title << setw(15) << right << books[i].year << endl;
     }
 	cout << "\n\n";
 
